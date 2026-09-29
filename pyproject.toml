@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "codecompass-chess-tutor"
+version = "0.1.0.dev0"
+description = "An experimental, endgame-first, GPL-3.0-or-later chess-learning system."
+readme = "README.md"
+license = "GPL-3.0-or-later"
+requires-python = ">=3.10"
+authors = [{ name = "Cormac O'Sullivan" }]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+# python-chess is a normal runtime dependency, not isolated - see
+# decisions/0010-gpl-relicensing-and-dependency-simplification.md.
+# The mcp SDK is pinned now to establish the real dependency manifest
+# (Phase 2A); the MCP tool surface itself is roadmap item 7, not built yet.
+dependencies = [
+    "chess>=1.11,<2",
+    "mcp>=2.2,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
