@@ -29,8 +29,9 @@ project was bootstrapped from, preserved verbatim.
   engine-plausible (`decisions/0003`, `decisions/0009`).
 - A daily thematic tactical-puzzle session, sourced from Lichess's
   CC0-licensed puzzle export, covering forks, pins, skewers, discovered
-  attacks, deflection, decoys, clearance, interference, overloaded pieces,
-  back-rank motifs, and related forcing-move themes (`decisions/0006`,
+  attacks, removal of defender, deflection, decoys, clearance, interference,
+  overloaded pieces, back-rank motifs, forcing-move recognition, and
+  loose/undefended pieces (`decisions/0006`,
   `0009`).
 - Both features sharing one lightweight concept model and one learner-
   evidence store, to test whether tactics and endgame training can

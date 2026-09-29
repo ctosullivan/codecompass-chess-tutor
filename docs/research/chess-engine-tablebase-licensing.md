@@ -173,7 +173,8 @@ Three genuinely different things, easy to conflate:
 For the specific MVP slice under consideration (pawn endings: K+P vs K,
 opposition, key squares, pawn races, basic zugzwang) — **no, a full
 evaluation engine is not obviously required.** These are exactly the
-positions tablebases solve perfectly and cheaply (≤5–6 pieces), so
+positions tablebases solve perfectly and cheaply (≤7 pieces, per the
+summary table above), so
 correctness can be established via:
 
 - a legal-move validator (in-house or isolated GPL component, per §2), plus

@@ -9,8 +9,12 @@ Accepted (2026-09-30).
 The endgame core needs an authoritative source of "what is actually the
 correct/winning continuation" for the bounded pawn-ending curriculum under
 consideration (K+P vs K, opposition, key squares, pawn races, zugzwang).
-These are exactly the positions Syzygy tablebases solve perfectly (≤5–6
-pieces). See `docs/research/chess-engine-tablebase-licensing.md`.
+These are exactly the positions Syzygy tablebases solve perfectly — Syzygy
+covers positions with up to 7 pieces total (confirmed in
+`docs/research/chess-engine-tablebase-licensing.md`), and the bounded
+pawn-ending curriculum under consideration (K+P vs K is 3 pieces; the other
+named endings stay similarly small) sits comfortably within that range with
+room to spare. See `docs/research/chess-engine-tablebase-licensing.md`.
 
 Three genuinely different things were researched: the tablebase *data*
 itself, tablebase *probing code* (bundled GPL vs. standalone

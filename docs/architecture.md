@@ -28,7 +28,8 @@ Bounded pawn endings (K+P vs K, opposition, key squares, pawn races, king
 activity, zugzwang, basic passed-pawn concepts — `decisions/0009`) are the
 one area where this project's chosen correctness mechanism — tablebase
 lookup — is both perfect and cheap (`decisions/0003`): Syzygy tablebases
-solve positions up to 5–6 pieces exactly. Starting here means the tutor can
+solve positions up to 7 pieces exactly — far more than the 3-4 pieces the
+bounded pawn-ending curriculum actually needs. Starting here means the tutor can
 make an unusually strong claim for an AI-assisted learning tool: every
 "this move is correct" statement in the endgame core is mechanically
 provable, not merely engine-plausible.
@@ -51,8 +52,16 @@ A hard line runs through this project, referenced throughout `decisions/`:
   drawn/lost per tablebase, does a claimed tactical solution actually hold —
   come only from the chess-validation layer (a bounded in-house legal-move
   validator, tablebase lookup, and, later, an isolated optional engine —
-  `decisions/0002`, `0003`). This layer never trusts an LLM's or a dataset's
-  claim without mechanical re-derivation (`decisions/0006`).
+  `decisions/0002`, `0003`). This layer never treats an LLM's own assertion
+  as ground truth. For the endgame core, where the validation layer's own
+  scope reaches, facts are independently re-derived (tablebase-provable).
+  **For v1's sourced tactical puzzles, this project's own independent
+  re-derivation does not yet exist** — the in-house validator is
+  endgame-scoped and engine integration is deferred (`decisions/0002`,
+  `0003`) — so v1 instead relies on, and honestly records provenance as,
+  Lichess's own external generator/human-review pipeline; building this
+  project's own independent re-derivation pass over sourced puzzles is
+  explicit follow-up work, not yet done (`decisions/0006`).
 - **Explanation, teaching, and interaction** are the AI assistant's job,
   operating through MCP on top of facts the validation layer has already
   established. An LLM-generated explanation of *why* a position is winning
@@ -191,7 +200,7 @@ summarized from `decisions/`:
 | `chess.svg` (part of `python-chess`) | Full-board SVG rendering primitive | GPL-3.0-or-later | Isolated behind a rendering-adapter module | `0004` |
 | cburnett piece artwork | Piece glyphs | BSD-3-clause (option exercised from a multi-license offer) | Attribution notice required, no share-alike | `0004` |
 | SQLite | Concept graph + learner-evidence store | Public domain | Direct runtime dependency, no isolation needed | `0005`, `0008` |
-| Lichess CC0 puzzle/game/eval exports | Tactical puzzle and master-game sourcing | CC0 1.0 | Data, not code; no isolation needed | `0006` |
+| Lichess CC0 puzzle/game/eval exports | Tactical puzzle sourcing, plus strong-player game positions (Elite Database, 2300+ rated — not classical "master game" corpora) | CC0 1.0 | Data, not code; no isolation needed | `0006` |
 | CodeCompass (`codecompass-context`) | Development-time context tool only | GPL-3.0-or-later | Never imported by runtime code — see below | `CLAUDE.md` §8 |
 
 ## On this project's relationship to CodeCompass
@@ -256,6 +265,17 @@ Carried forward explicitly from `decisions/` rather than treated as settled
   closed by research alone.
 - The exact tactical-puzzle "dominant unrelated tactic" rejection check has
   no off-the-shelf precedent and is original design work for a later phase.
+- **v1 does not yet independently re-derive sourced tactical puzzles'
+  solutions** — it relies on Lichess's own generator/human-review pipeline
+  plus honest provenance tagging, because the in-house validator (`0002`)
+  is endgame-scoped and engine integration is deferred (`0003`). Building
+  this project's own re-derivation pass is real, not-yet-done follow-up
+  work for roadmap item 4, not something already covered — see the
+  narrowed claim in `decisions/0006`.
+- Lichess's actual `Themes` tag vocabulary was not fetched/verified against
+  the live dataset in research — only the column's existence was confirmed.
+  Confirming real tag spellings against a downloaded copy is a cheap first
+  step of roadmap item 4 (`decisions/0009`).
 - True concurrent-write safety between this project's vault writes and a
   live Obsidian instance has not been empirically validated.
 - Whether the bounded in-house validator's scope is adequate once

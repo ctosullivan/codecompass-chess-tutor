@@ -38,15 +38,29 @@ smaller puzzle-generation tools as further methodology references.
   Selecting from Lichess's already-large, pre-tagged corpus (6.1M+ puzzles)
   is sufficient to support a daily thematic set without needing generation
   on day one.
-- **Even for selected (not generated) puzzles, this project re-derives and
-  mechanically re-checks the solution itself before serving it** — never
-  trusting the dataset's `Moves` column, an LLM's assertion, or a bare engine
-  eval as ground truth without independent mechanical verification via the
-  chess-rules/tablebase/engine boundary established in `0002`/`0003`. This
-  mirrors the "never serve an unproven claimed solution" precedent found in
-  `ChessPuzzleForge`'s re-proving approach, applied here to sourced (not
-  generated) data as an extra correctness layer, not a substitute for
-  Lichess's own existing curation.
+- **For v1, a sourced puzzle's solution provenance is "validated by Lichess's
+  own generator/human-review pipeline," recorded as such — not
+  "independently re-derived by this project."** This is a narrower claim
+  than this record originally made, and the narrowing matters: `0002`'s own
+  in-house legal-move validator is explicitly scoped to bounded endgame
+  positions (few pieces), and `0003` defers full engine integration entirely
+  for the MVP. Neither currently covers the arbitrary-middlegame legality
+  and best-move confirmation that independently re-deriving a general
+  tactical puzzle's solution would require. Claiming this project
+  mechanically re-derives every sourced solution itself would overstate what
+  `0002`/`0003` actually build for v1 — exactly the kind of unearned
+  confidence `CLAUDE.md` §2 and `decisions/0007` warn against.
+  **Independent mechanical re-derivation of sourced puzzles (via a dev-time
+  `python-chess` + engine oracle pass over the corpus, per `0002`'s
+  dev-time-only carve-out) is deferred to the tactical-puzzle-model phase
+  (roadmap item 4)**, tracked as a follow-up gate, not built in this
+  bootstrap. Until then, v1 relies on — and explicitly records provenance
+  as — Lichess's own pipeline (engine analysis plus a human-review step,
+  per `docs/research/tactical-puzzle-datasets.md` §2), which is itself a
+  real, if external, mechanical-plus-human validation, not a bare unvetted
+  claim. This is consistent with `ChessPuzzleForge`'s re-proving precedent
+  as a *design target* for the deferred phase, not as something this
+  bootstrap builds now.
 - **When generation/modification of positions is eventually built** (a later
   phase, not v1), the pipeline must follow this shape, informed by the
   precedents in the research document but designed by this project (no
@@ -88,16 +102,19 @@ smaller puzzle-generation tools as further methodology references.
 ## Consequences
 
 - v1's puzzle corpus is bounded by whatever themes/positions Lichess's own
-  tagging already covers — adequate for the daily-thematic-set MVP given the
-  motif list in the bootstrap prompt (forks, pins, skewers, discovered
-  attacks, etc. are all present in Lichess's `Themes` taxonomy), but this
-  project inherits Lichess's own tagging quality/limitations rather than
-  defining its own from scratch for v1.
-- Re-deriving/re-checking sourced puzzle solutions mechanically before
-  serving is extra work v1 must actually do — it is not satisfied by simply
-  trusting the dataset's own `Moves` column, even though that column is
-  itself already reasonably trustworthy (Lichess's own pipeline). This
-  keeps faith with the project's evidence/provenance principle.
+  tagging already covers — the bootstrap prompt's motif list (forks, pins,
+  skewers, discovered attacks, etc.) is expected to map onto Lichess's
+  `Themes` column, but the exact tag vocabulary was not independently
+  fetched/verified against the live dataset in research (only the column's
+  existence was confirmed) — **verifying the actual tag names is a concrete,
+  cheap first step of roadmap item 4, not yet done.** This project inherits
+  Lichess's own tagging quality/limitations rather than defining its own
+  from scratch for v1.
+- **v1 does not yet independently re-derive sourced puzzle solutions** — see
+  the narrowed Decision above. It relies on Lichess's own pipeline
+  validation plus honest provenance tagging. Building this project's own
+  independent re-derivation pass is real future work (roadmap item 4), not
+  something to silently treat as already covered by `0002`/`0003`.
 - The harder, currently-undesigned validation problem (rejecting a
   theme-mismatched dominant tactic) is deliberately deferred, not solved —
   tracked as unfinished design work for the generation phase (roadmap item

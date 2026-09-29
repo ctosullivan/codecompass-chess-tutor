@@ -16,7 +16,7 @@ pieces, back-rank motifs, forcing-move recognition, loose/undefended
 pieces).
 
 `decisions/0003-tablebase-and-engine-strategy.md` establishes that Syzygy
-tablebases solve positions with up to 5–6 pieces perfectly and cheaply —
+tablebases solve positions with up to 7 pieces perfectly and cheaply —
 which is exactly the piece-count range of K+P vs K and related basic pawn
 endings. `decisions/0006-tactical-puzzle-sourcing-and-validation.md`
 establishes that Lichess's puzzle export already carries a `Themes` tagging
@@ -33,15 +33,22 @@ taxonomy covering essentially all of the named motifs above.
   is perfect and cheap — the curriculum boundary and the mechanical-
   validation boundary line up, which is the strongest evidence available
   for "this is a well-bounded starting slice" rather than an arbitrary one.
-- **The MVP's tactical-puzzle theme set is drawn directly from Lichess's
-  existing puzzle `Themes` taxonomy**, restricted to the motifs named in the
-  bootstrap prompt (fork, pin, skewer, discoveredAttack, removeDefender,
-  deflection, decoy, clearance, interference, overloading, back-rank motifs,
-  hangingPiece/loose-piece patterns, and forcing-move-recognition-style
-  themes such as forced mate sequences) rather than inventing a new
-  taxonomy. This keeps the tactical-puzzle model's theme vocabulary directly
-  queryable against the sourced dataset (`0006`) with no translation layer
-  needed at MVP.
+- **The MVP's tactical-puzzle theme set is intended to be drawn directly
+  from Lichess's existing puzzle `Themes` taxonomy**, restricted to the
+  motifs named in the bootstrap prompt (forks, pins, skewers, discovered
+  attacks, removal of defender, deflection, decoys, clearance, interference,
+  overloaded pieces, back-rank motifs, forcing-move recognition, and
+  loose/undefended pieces), rather than inventing a new taxonomy. **The
+  exact Lichess tag spellings (e.g. whether it is literally `fork` /
+  `discoveredAttack` / `removeDefender` or some other naming) were not
+  independently fetched and verified against the live dataset in this
+  bootstrap's research** — `docs/research/tactical-puzzle-datasets.md`
+  confirms the `Themes` column exists and is populated, but does not list
+  or quote its actual tag vocabulary. Confirming the real tag names against
+  a downloaded copy of the dataset is a concrete, cheap first step of
+  roadmap item 4 — not yet done, and not assumed here. The architectural
+  point this decision commits to (reuse whatever taxonomy Lichess actually
+  uses, don't invent a parallel one) holds regardless of the exact spellings.
 - **Daily set size and difficulty progression are deferred to the
   learner/pedagogical-model design phase (roadmap item 5)**, not fixed here
   — the bootstrap prompt explicitly asks for an appropriate size to be

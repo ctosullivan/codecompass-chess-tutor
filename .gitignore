@@ -5,6 +5,7 @@ vendor/
 context-graph.db
 .claude/skills/codecompass*/
 .claude/commands/discovery.md
+.claude/scheduled_tasks.lock
 
 # Secrets
 .env

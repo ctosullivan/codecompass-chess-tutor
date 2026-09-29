@@ -25,9 +25,12 @@ SOFTWARE.
 This license covers this project's own source and documentation. Some
 optional or development-time components this project may use or interoperate
 with are separately licensed (notably GPL-3.0-or-later for python-chess,
-Stockfish, and CodeCompass itself) — see decisions/0002.md, 0003.md, 0004.md,
-and 0007.md for how those are isolated from this project's own MIT-licensed
-distribution, and docs/architecture.md for the current summary. Bundled
-third-party assets (e.g. chess piece artwork) carry their own attribution
-requirements, recorded in a NOTICE file once actually vendored — see
-decisions/0004-board-rendering-approach.md.
+Stockfish, and CodeCompass itself) — see
+decisions/0002-chess-rules-validation-boundary.md,
+decisions/0003-tablebase-and-engine-strategy.md,
+decisions/0004-board-rendering-approach.md, and
+decisions/0007-project-license-mit.md for how those are isolated from this
+project's own MIT-licensed distribution, and docs/architecture.md for the
+current summary. Bundled third-party assets (e.g. chess piece artwork)
+carry their own attribution requirements, recorded in a NOTICE file once
+actually vendored — see decisions/0004-board-rendering-approach.md.
