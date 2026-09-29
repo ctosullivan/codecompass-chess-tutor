@@ -66,6 +66,61 @@ avoided, per the directing prompt's own instruction.
   simultaneously (a single self-review, however careful, is a weaker check
   than a fresh reader with no stake in the material — see the bootstrap's
   own retro for why).
+- **This retro's own wording above ("the independent review that follows
+  this retro...") was itself the source of a real process gap**: this
+  phase got marked `done` in `planning/ROADMAP.md` immediately after this
+  retro was written, without that review ever actually happening or its
+  outcome ever being committed to the repository — a live violation of
+  `CLAUDE.md` §7 that persisted across several commits before being
+  caught. See the addendum below for how it was closed. Worth remembering
+  as its own lesson: writing "review pending" in a retro is not the same
+  as blocking the roadmap status change on it actually happening — the
+  roadmap edit and the review need to be the same causal step, not two
+  steps trusted to happen in order.
+
+## Addendum: independent review, actually performed and recorded (2026-09-30)
+
+A fresh independent-review agent (no prior involvement, read-only) was run
+against this phase's full reconciliation output — `decisions/0010`,
+`0011`, the `Status:` notes on `0002`/`0003`/`0004`/`0006`/`0007`, `LICENSE`,
+`NOTICE-THIRD-PARTY.md`, and every current-state document
+(`README.md`, `docs/architecture.md`, `planning/ROADMAP.md`,
+`planning/CONTEXT.md`) — checked against nine specific criteria: internal
+coherence of `0010`/`0011`; mechanical append-only compliance of the four
+touched ADRs (verified via `git show`/`git diff` on the exact commit that
+touched them, not just by reading); GPL-3.0-or-later licensing consistency;
+correctness of `LICENSE`/`NOTICE-THIRD-PARTY.md`; unambiguous direct
+runtime use of `python-chess`; actual removal of obsolete MIT-driven
+architecture from current-state text; the board-rendering hedge-rounding
+correction; the tactical-puzzle legality-vs-optimality distinction; and
+overall README/architecture/ROADMAP/CONTEXT consistency.
+
+**Result: the substantive reconciliation content passed all eight content
+checks (1–8) cleanly.** `decisions/0010` and `0011` were found internally
+coherent and accurately reasoned; the append-only rule held mechanically
+(the reviewer diffed the exact commit that added the Status notes and
+confirmed zero changes outside that section in all four ADRs); licensing
+language, `LICENSE`, `NOTICE-THIRD-PARTY.md`, the direct-runtime-dependency
+framing, the removed MIT-driven architecture, the corrected board-rendering
+wording, and the legality-vs-optimality distinction were all confirmed
+consistent throughout.
+
+**The ninth check (cross-document consistency) correctly caught two real
+issues, both process rather than content**: (a) this phase's own "done"
+status had never had its required review recorded anywhere in git
+history — exactly the gap this addendum closes; and (b) at the specific
+moment the reviewer read the repository, `planning/ROADMAP.md` had an
+in-progress *uncommitted* edit (already flipping item 1b to "in progress"
+and adding a "Phase 2A plan" section) that was not yet reflected in
+`planning/CONTEXT.md`, so the two files briefly disagreed on disk. That
+edit was completed and committed (`189c1d7`) — with `CONTEXT.md` updated
+in the same commit — before this addendum was written; the reviewer's
+snapshot simply caught an in-flight moment, not a lasting defect. No
+content fix was required as a result of this review — only this recorded
+closeout.
+
+**Roadmap item 1b is now marked `done`**, citing this addendum as the
+review record `CLAUDE.md` §7 requires.
 
 ## Anything worth remembering
 
