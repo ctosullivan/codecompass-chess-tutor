@@ -1,0 +1,19 @@
+# CodeCompass dependency-tracking config.
+#
+# CodeCompass is a development/context tool for this project, not a runtime
+# dependency of the chess tutor itself — see docs/architecture.md and
+# decisions/ for that boundary. This file, and everything CodeCompass
+# generates from it (context-graph.db, vendor/<name>/ digests), is a
+# development-time convenience: someone must be able to clone, install, test
+# and run the tutor without CodeCompass installed at all.
+#
+# Starts empty. Run bare `codecompass` (no arguments) in this project once
+# real dependencies exist, and it will discover them from the project's
+# actual manifest (pyproject.toml or equivalent) and offer to populate this
+# file for you.
+#
+# Example entry, once you have one:
+#
+# [[vendor]]
+# name = "requests"
+# ecosystem = "python"
