@@ -11,15 +11,16 @@ not as a separate housekeeping pass later.
 | # | Item | Status | Notes |
 |---|---|---|---|
 | 1 | Bootstrap: process, evidence-gathering, initial architecture | done | Research, decisions 0001-0009, architecture/README/LICENSE, independent review, fixes, and retro all complete. See `planning/prompts/0001-project-bootstrap.md`, `docs/research/`, `decisions/`, `planning/retros/0001-project-bootstrap.md`. |
-| 1b | GPL relicensing and architecture simplification | done | Project owner decided GPL-3.0-or-later over MIT (`decisions/0010`); `python-chess` adopted as a normal runtime dependency, dropping the bespoke legal-move validator before it was built. See `planning/prompts/0002-gpl-relicensing-and-simplification.md`, `decisions/0010`, `0011`. |
-| 2 | Endgame-domain model (state, concepts, principles) | planned | Scope is the bounded pawn-ending curriculum in `decisions/0009`; concept-graph shape in `decisions/0008`. `python-chess` (`decisions/0010`) now supplies the chess-state primitive directly — this phase is about the concept/curriculum layer built on top of it, not about chess-state representation itself, which is no longer this project's own code to write. |
-| 3 | Tablebase-backed correctness: integration and verification | planned | Reduced in scope from the bootstrap's original framing: with `python-chess` adopted directly (`decisions/0010`), this phase is integration and testing — does the curriculum's use of `python-chess` + tablebase lookup actually produce correct, mechanically-provable lesson content — not implementation of generic chess rules, which this project no longer builds. |
-| 4 | Tactical motif / daily-puzzle model | planned | See `docs/research/tactical-puzzle-datasets.md` for sourcing; `decisions/0011` for what's newly cheap (move-legality/state-transition re-derivation, now plausible early via `python-chess`) versus still deferred (best-move/theme-purity verification, needs engine/tablebase analysis not yet built). |
-| 5 | Learner / pedagogical model | planned | Concepts encountered, recurring errors, prerequisites, transfer evidence. |
-| 6 | Visual pedagogy and rendering | planned | Build the `PedagogicalViewSpec` → project-owned composition → `chess.svg` primitive pipeline (`decisions/0004`, `0010`); no licensing-motivated isolation boundary needed, but the pedagogical composition layer (cropping, arrows, comparisons) is still original work — no surveyed library provides it (`docs/research/board-rendering-options.md`). |
-| 7 | MCP interface | planned | See `docs/research/mcp-protocol-and-language-choice.md`. |
-| 8 | Obsidian / vault integration | planned | See `docs/research/obsidian-integration-and-learner-storage.md`. |
-| 9 | First integrated endgame-learning + daily-tactics loop | planned | The first end-to-end MVP slice; depends on 2–8. |
+| 1b | GPL relicensing and architecture simplification | in progress | Decision content (`decisions/0010`, `0011`) and reconciliation work are complete, but this row stays `in progress` — not `done` — until the independent review this phase's own retro flagged as still-pending has actually happened and its outcome is recorded (`CLAUDE.md` §7). See `planning/prompts/0002-gpl-relicensing-and-simplification.md`, `planning/retros/0002-gpl-relicensing.md`. |
+| 2A | Python project and chess-state foundation | in progress | Smallest real executable slice: package structure, pinned `python-chess`/`mcp` dependencies, tests proving FEN loading/legal moves/state transitions/SAN-UCI round-tripping. No concept model, no tablebase, no MCP surface, no Obsidian yet. See "Phase 2A plan" below and `planning/prompts/0003-close-review-gate-and-begin-implementation.md`. |
+| 2B | Endgame concept/state model | planned | Deliberately small slice (opposition, key squares, K+P vs K) on top of 2A's `python-chess` foundation. Smallest SQLite schema justified by real queries (what concepts apply to this position? what are its prerequisites? what illustrates/counters it?) — not a general graph platform. Concept-graph shape in `decisions/0008`; curriculum bound in `decisions/0009`. Kept separate from Phase 3 (tablebase truth) per the directing prompt. |
+| 3 | Tablebase-backed endgame truth | planned | Separate from 2B by design: tablebase abstraction/integration (remote lichess API per `decisions/0003`/`0010`), W/D/L lookup, successor-state verification, tests showing 2B's examples agree with tablebase truth, explicit handling of network/unavailability failure. Explanation prose never substitutes for this verification. |
+| 4 | Tactical motif / daily-puzzle model | planned | See `docs/research/tactical-puzzle-datasets.md` for sourcing; `decisions/0011` for what's newly cheap (move-legality/state-transition re-derivation, via `python-chess`) versus still deferred (best-move/theme-purity verification). Verify the real Lichess `Themes` vocabulary against actual dataset data before hard-coding any mapping. |
+| 5 | Learner / pedagogical model | planned | Concepts encountered, recurring errors, recognition/candidate-generation/calculation failure distinctions, prerequisites, review history, transfer evidence. Map → Explore → Commit → Practice → Feedback → Revise. No arbitrary gamification/scoring unless justified. |
+| 6 | Visual pedagogy and rendering | planned | Build the `PedagogicalViewSpec` → project-owned composition → `chess.svg` primitive pipeline (`decisions/0004`, `0010`). Full board and bounded cutaways (3×3/4×4/5×5), orientation, highlights, arrows, minimal-pair/now-then comparisons. Crop size/content is teaching intent, not rendering config. No surveyed library provides this (`docs/research/board-rendering-options.md`) — original work regardless of licensing. |
+| 7 | MCP interface | planned | A deliberately small surface of coarse learner-facing capabilities (inspect/explain a position, practise a concept, prepare daily puzzles, submit an answer, render a view, read/update progress, work with vault notes) — not dozens of low-level tools. Designed only once the underlying domain operations it exposes actually exist. See `docs/research/mcp-protocol-and-language-choice.md`. |
+| 8 | Obsidian / vault integration | planned | Vault as ordinary files, strict path-root safety, dedicated tutor subfolder, Markdown + simple frontmatter + relative links to generated artifacts. SQLite only for regenerable system state, never the learner's only copy of anything. No hard runtime dependency on Obsidian or an Obsidian plugin. See `docs/research/obsidian-integration-and-learner-storage.md`. |
+| 9 | First integrated endgame-learning + daily-tactics loop | planned | The first end-to-end MVP slice — the two loops sketched in `planning/prompts/0003-close-review-gate-and-begin-implementation.md` §5 (concept-study loop; daily-tactics loop), sharing one learner/concept/evidence architecture. Depends on 2A–8. |
 | 10 | Evaluation with real learning scenarios | planned | Depends on 9 existing and being used. |
 
 Status values: `planned` / `in progress` / `done` / `deferred` (on the list,
@@ -29,40 +30,82 @@ reconsidered later without that context).
 These items are roadmap themes from the bootstrap prompt, not mandated phase
 boundaries — see `planning/prompts/0001-project-bootstrap.md`. They may be
 combined or split as evidence supports doing so; keep early phases small.
-GPL relicensing (`1b`) reduces the *infrastructure* cost of items 2, 3, and
+GPL relicensing (`1b`) reduces the *infrastructure* cost of items 2A, 3, and
 6 (no bespoke validator, no rendering isolation boundary to build) — it does
 not remove or merge them, and it does not broaden the MVP boundary set in
-`decisions/0009` (see `decisions/0010`'s own Consequences section).
+`decisions/0009` (see `decisions/0010`'s own Consequences section). Item 2
+from the prior version of this roadmap is split into 2A (chess-state
+foundation) and 2B (concept/state model) because they are genuinely
+different-sized, independently reviewable pieces of work — establishing
+`python-chess` as a dependency is not the same task as designing a concept
+schema on top of it, and collapsing them risked exactly the "one large
+implementation phase" this project's own process rules warn against.
 
-## Next implementation phase (identified, not started)
+The MVP is explicitly bounded (see
+`planning/prompts/0003-close-review-gate-and-begin-implementation.md` §7):
+no opening training, general middlegame strategy, broad master-game mining,
+generated synthetic puzzles, cloud services, web/mobile UI, a dedicated
+graph database, a large permanent multi-agent system, broad Stockfish
+integration, or general-purpose engine functionality — unless real evidence
+gathered while building items 2A–10 shows one is actually required to
+complete the MVP as defined. An attractive capability that shows up along
+the way is recorded as a later candidate here, not built silently.
 
-The smallest sensible next phase, reassessed against the simplified
-architecture in `decisions/0010` rather than assumed unchanged from the
-bootstrap's original item-2-first framing:
+## Phase 2A plan: Python project and chess-state foundation
 
-1. Establish the Python project/package and pinned dependencies
-   (`pyproject.toml` or equivalent), including `python-chess` and the `mcp`
-   SDK as the first two real entries.
-2. Integrate `python-chess` as the chess-state representation (board, legal
-   moves, FEN/SAN) — this is now adopting a dependency, not implementing
-   rules.
-3. Define the smallest concept/state model needed for the bounded
-   pawn-ending curriculum (`decisions/0008`, `0009`) — the first few
-   concepts (opposition, key squares) and their relationships.
-4. Introduce the initial SQLite schema only to the extent required by real
-   domain queries arising from step 3 — not speculatively.
-5. Establish the first few mechanically grounded endgame concepts/examples,
-   verified against tablebase lookup (`decisions/0003`).
-6. **Run CodeCompass against the resulting real project state** once a real
-   dependency manifest and first-party source exist — this project's first
-   genuine dogfooding of the template/CodeCompass workflow it was
-   bootstrapped from (`vendor.toml` has stayed empty until now because
-   there was nothing real to track). Use it as a development aid only,
-   never a runtime requirement (`CLAUDE.md` §8); record in
-   `planning/knowledge/` and `planning/context-gaps/` whether its
-   source/dependency context was actually useful, and file any real
-   missing/misleading context found — not manufactured usage to generate
-   positive evidence.
+**Goal**: establish the first real executable project state with the
+minimum infrastructure necessary for later domain work — nothing more.
 
-This phase is **identified here, not implemented** — see
-`planning/CONTEXT.md` for current status.
+**In scope**:
+
+- Python project/package structure (`pyproject.toml`, a `src/` layout,
+  minimal packaging metadata consistent with GPL-3.0-or-later).
+- Pinned dependencies: `python-chess` (the chess-state primitive,
+  `decisions/0010`) and the official `mcp` Python SDK (`decisions/0001`) —
+  added now to establish the real manifest, **not** to build the MCP
+  surface yet (that's roadmap item 7).
+- A first-party source tree with a small `chess_tutor` (or equivalent)
+  package, wrapping `python-chess` usage behind a thin, testable module
+  boundary — kept for ordinary separation-of-concerns reasons per
+  `decisions/0010`, not licensing.
+- Tests proving: FEN loading; legal-move enumeration/handling; applying a
+  move and observing the resulting state transition; SAN/UCI
+  round-tripping where relevant.
+- Minimum justified test/tooling configuration (a test runner, nothing
+  speculative).
+- CodeCompass dogfooding once the manifest and source tree are real: run
+  the current supported discovery/sync workflow, let it populate
+  `vendor.toml` if it does so, and honestly record whether it helped —
+  see "CodeCompass dogfooding" below.
+
+**Explicitly out of scope for 2A**: the concept graph (2B), tablebase
+integration (3), pedagogy, the daily-puzzle workflow, visual/cutaway
+rendering, the MCP tool surface itself, and Obsidian integration. None of
+these are touched in this phase.
+
+**Done when**: the package installs and imports cleanly; the test suite
+above passes; `vendor.toml` reflects reality (populated or deliberately
+left as-is, either way for a recorded reason); an independent review of
+this phase has actually happened and passed (or its fixes have landed);
+`planning/ROADMAP.md`/`CONTEXT.md` are updated to reflect it; a retro and
+any knowledge/context-gap entries are recorded.
+
+### CodeCompass dogfooding (Phase 2A)
+
+This is this project's first genuine clean-slate test of the CodeCompass
+template workflow it was bootstrapped from — `vendor.toml` has stayed
+empty until now because there was nothing real to track. Once Phase 2A's
+manifest and source tree exist: run CodeCompass's current discovery/sync
+workflow; use it as a development aid only, never a runtime requirement
+(`CLAUDE.md` §8); record honestly in `planning/knowledge/` and
+`planning/context-gaps/` whether its dependency/source context was
+actually useful, or actually missing/misleading — not manufactured usage
+to generate a positive result either way.
+
+## Later implementation phases (not detailed yet)
+
+Phases 2B, 3, and beyond (roadmap items 4–10 above) get their own detailed
+plan, in this same lightweight format, when each is actually started — not
+speculatively drafted now. Drafting a phase's detailed plan before the
+phase before it is done and reviewed risks exactly the kind of large,
+unreviewed, all-at-once planning this project's process is meant to avoid.
