@@ -95,3 +95,13 @@ One logical change per commit, with a message that says what changed and
 why. Don't hold unrelated changes for a single large commit. Don't
 force-push, rewrite shared history, or skip commit hooks without being
 explicitly asked to.
+
+
+<!-- codecompass:start -->
+The table below lists dependencies with a generated reference digest under `vendor/<name>/`. Consult the linked digest before relying on training knowledge for these libraries.
+
+| Vendor | Path | Version | Enriched | Deps | Consult when |
+|---|---|---|---|---|---|
+| chess | `vendor/chess/` | 1.11.2 | no | [DEPTREE.md](./vendor/chess/DEPTREE.md) | general usage questions |
+| mcp | `vendor/mcp/` | 2.2.0 | no | [DEPTREE.md](./vendor/mcp/DEPTREE.md) | general usage questions |
+<!-- codecompass:end -->

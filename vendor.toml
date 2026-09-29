@@ -17,3 +17,11 @@
 # [[vendor]]
 # name = "requests"
 # ecosystem = "python"
+
+[[vendor]]
+name = "chess"
+ecosystem = "python"
+
+[[vendor]]
+name = "mcp"
+ecosystem = "python"
