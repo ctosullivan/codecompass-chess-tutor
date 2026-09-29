@@ -1,9 +1,17 @@
 # Architecture
 
-This file describes the project's *current* architecture as of the bootstrap
-phase — a research-and-decisions foundation, not yet any running code. See
+This file describes the project's *current* architecture — a
+research-and-decisions foundation, not yet any running code. See
 `planning/ROADMAP.md` for what comes next and `decisions/` for the reasoning
 behind each choice summarized here.
+
+**Licensing note**: this project is licensed GPL-3.0-or-later
+(`decisions/0010`, superseding the bootstrap's original MIT position in
+`decisions/0007`). This was a deliberate architectural simplification, not
+just a license-file change — `python-chess` is now a normal runtime
+dependency rather than something isolated behind adapter/process
+boundaries. See "Key dependencies" and "Known gates" below for what changed
+and what didn't.
 
 ## What this project is
 
@@ -50,18 +58,27 @@ A hard line runs through this project, referenced throughout `decisions/`:
 
 - **Mechanically established facts** — is a move legal, is a position won/
   drawn/lost per tablebase, does a claimed tactical solution actually hold —
-  come only from the chess-validation layer (a bounded in-house legal-move
-  validator, tablebase lookup, and, later, an isolated optional engine —
-  `decisions/0002`, `0003`). This layer never treats an LLM's own assertion
-  as ground truth. For the endgame core, where the validation layer's own
-  scope reaches, facts are independently re-derived (tablebase-provable).
-  **For v1's sourced tactical puzzles, this project's own independent
-  re-derivation does not yet exist** — the in-house validator is
-  endgame-scoped and engine integration is deferred (`decisions/0002`,
-  `0003`) — so v1 instead relies on, and honestly records provenance as,
-  Lichess's own external generator/human-review pipeline; building this
-  project's own independent re-derivation pass over sourced puzzles is
-  explicit follow-up work, not yet done (`decisions/0006`).
+  come only from the chess-validation layer: `python-chess` for board
+  state, legal-move generation, and game-state checks; tablebase lookup for
+  exact endgame truth; and, later, an optional engine for positions neither
+  of those cover (`decisions/0003`, `0010`). This layer never treats an
+  LLM's own assertion as ground truth. For the endgame core, facts are
+  independently re-derived and tablebase-provable.
+  **Move legality and tactical optimality are separate questions, and this
+  project is careful not to conflate them** (`decisions/0011`): `python-chess`
+  makes independent *move-legality* and *state-transition* re-derivation
+  for sourced tactical puzzles cheap and general-purpose (no longer scoped
+  to bounded endgames, now that `decisions/0002`'s runtime decision is
+  superseded). It does **not** establish that a puzzle's stored solution is
+  the *best* available move, or that its apparent theme isn't dominated by
+  an unrelated, stronger tactic — that needs engine or tablebase
+  *evaluation*, which remains deferred (`decisions/0003`). **For v1's
+  sourced tactical puzzles, this project's own independent best-move/
+  theme-purity re-derivation does not yet exist**; v1 relies on, and
+  honestly records provenance as, Lichess's own external generator/
+  human-review pipeline for that part. Building this project's own
+  engine-backed re-derivation pass is explicit follow-up work, not yet done
+  (`decisions/0006`, `0011`).
 - **Explanation, teaching, and interaction** are the AI assistant's job,
   operating through MCP on top of facts the validation layer has already
   established. An LLM-generated explanation of *why* a position is winning
@@ -85,12 +102,13 @@ Chess Tutor
         ├── endgame lesson/exercise         │  graph + evidence store,
         │   selection                       │  SQLite (decisions/0005, 0008)
         ├── daily thematic tactical puzzles ─┘
-        ├── visualisation / board rendering   (decisions/0004)
+        ├── visualisation / board rendering   (decisions/0004, 0010)
         │
         └── chess validation layer
-                 ├── legal chess state        (decisions/0002)
-                 ├── tablebase                (decisions/0003)
-                 └── engine, deferred/optional (decisions/0003)
+                 ├── python-chess: board state,
+                 │   legal moves, notation      (decisions/0010)
+                 ├── tablebase                   (decisions/0003)
+                 └── engine, deferred/optional   (decisions/0003)
 ```
 
 ## Layered boundaries
@@ -115,26 +133,36 @@ renderer adapter                (decisions/0004)
 SVG / image artifact
 ```
 
-The chess-validation layer (`decisions/0002`, `0003`) and the rendering
-layer (`decisions/0004`) are each isolated behind their own adapter boundary
-for the same underlying reason: both are the places a GPL-licensed
-dependency (python-chess, Stockfish, `chess.svg`) may sit, and isolating
-them keeps that boundary legible and keeps this project's own MIT-licensed
-core free of GPL types leaking into its public domain model or MCP surface
-(`decisions/0007`).
+The chess-validation layer (`python-chess`, tablebase lookup, deferred
+engine — `decisions/0003`, `0010`) and the rendering layer (`decisions/0004`,
+`0010`) each still sit behind their own module boundary — but, since
+`decisions/0010` relicensed this project GPL-3.0-or-later, that boundary is
+no longer a *licensing* isolation requirement. It's kept because it's good
+architecture on its own merits: the domain/rendering layers depend on a
+specific chess library and a specific rendering primitive, and keeping that
+dependency behind a defined interface (rather than scattering direct
+`python-chess` imports through the whole codebase) keeps those choices
+swappable and the codebase legible, the same reason any well-factored
+project isolates a specific third-party library behind an interface. No
+GPL-type-leakage concern drives this anymore — `python-chess` types may
+appear directly wherever the domain/rendering code actually needs them.
 
 ## Visual pedagogy: view specification vs. rendering
 
 Board rendering is treated as part of the pedagogy, not presentation detail.
-Research found no board-rendering library, in any license, that supports
-rendering a bounded sub-region of the board (a 3×3/4×4 cutaway, a pawn-race
-lane, a promotion zone) — that capability doesn't exist off the shelf
-anywhere (`docs/research/board-rendering-options.md`). This project
-therefore separates *what to show* from *how to draw it*:
+Research surveyed a range of board-rendering libraries and artwork sources
+and found that **none of the surveyed candidates** support rendering a
+bounded sub-region of the board (a 3×3/4×4 cutaway, a pawn-race lane, a
+promotion zone) — see `docs/research/board-rendering-options.md` for the
+full list. This is a bounded search result, not proof that no such tool
+exists anywhere; it is, however, sufficient evidence that this project
+should plan to build that layer itself rather than expect to find it
+off-the-shelf. This project therefore separates *what to show* from *how to
+draw it*:
 
 ```
-Position
-    ↓
+position / board state
+        ↓
 Pedagogical View Specification
     ├── full board / cutaway bounds
     ├── orientation
@@ -142,15 +170,22 @@ Pedagogical View Specification
     ├── arrows / trajectories
     ├── annotations
     └── comparison state
-    ↓
-Renderer                          (decisions/0004)
-    ↓
-SVG / image / notebook artifact
+        ↓
+project-owned pedagogical composition   (crop, highlight, arrows, comparisons)
+        ↓
+python-chess / chess.svg primitive       (decisions/0004, 0010 — ordinary
+        ↓                                 dependency, no isolation needed)
+SVG artifact
+        ↓
+Obsidian / MCP consumer
 ```
 
-A view specification is plain data (which squares are in view, what's
-highlighted, what arrows exist, whether this is a before/after pair) — never
-logic embedded inside rendering code. The choice of crop is itself a
+The project-owned composition layer answers *what should the learner see?*;
+`chess.svg` (now a normal base primitive, not something requiring an
+isolation boundary — `decisions/0010`) answers only *how are squares and
+pieces drawn?*. A view specification is plain data (which squares are in
+view, what's highlighted, what arrows exist, whether this is a before/after
+pair) — never logic embedded inside rendering code. The choice of crop is itself a
 pedagogical decision: a full board matters when broader positional context
 is the point (e.g. king activity across the whole board); a narrow cutaway
 matters when the learner needs to perceive one specific relationship (e.g.
@@ -193,15 +228,14 @@ summarized from `decisions/`:
 |---|---|---|---|---|
 | Python | Implementation language | PSF | — | `0001` |
 | `mcp` (official Python MCP SDK) | MCP server binding | MIT (medium-high confidence) | Direct runtime dependency, no isolation needed | `0001` |
-| In-house legal-move validator | Runtime chess-rules boundary for the bounded MVP domain | This project's own (MIT) | N/A — it's the isolation | `0002` |
-| `python-chess` | Dev-time oracle/validation tool; possible future process-isolated runtime component | GPL-3.0-or-later | Dev-time only by default; process boundary if ever runtime | `0002` |
-| lichess tablebase API (`tablebase.lichess.ovh`) | Endgame correctness lookup | Hosted service, not a licensed dependency | Network call, no local licensing exposure | `0003` |
-| Stockfish | Deferred, optional future engine use | GPL-3.0-or-later | Subprocess/UCI only, never vendored | `0003` |
-| `chess.svg` (part of `python-chess`) | Full-board SVG rendering primitive | GPL-3.0-or-later | Isolated behind a rendering-adapter module | `0004` |
-| cburnett piece artwork | Piece glyphs | BSD-3-clause (option exercised from a multi-license offer) | Attribution notice required, no share-alike | `0004` |
+| `python-chess` | Board state, legal move generation, game-state checks, SAN/UCI notation, Syzygy support, `chess.svg` rendering — **normal runtime dependency** | GPL-3.0-or-later (same as this project) | Direct dependency, no isolation needed; kept behind a module boundary for ordinary separation-of-concerns reasons, not licensing | `0010` |
+| lichess tablebase API (`tablebase.lichess.ovh`) | Endgame correctness lookup | Hosted service, not a licensed dependency | Network call; MVP default for operational-simplicity reasons | `0003`, `0010` |
+| Stockfish | Deferred, optional future engine use | GPL-3.0-or-later | Subprocess/UCI only, if ever added — now for process-isolation reasons, not licensing | `0003`, `0010` |
+| `chess.svg` (part of `python-chess`) | Full-board SVG rendering primitive | GPL-3.0-or-later | Normal dependency, used directly by the project-owned composition layer | `0004`, `0010` |
+| cburnett piece artwork | Piece glyphs | BSD-3-clause (option exercised from a multi-license offer) | Attribution notice required (`NOTICE-THIRD-PARTY.md`), independent of this project's own license | `0004`, `0010` |
 | SQLite | Concept graph + learner-evidence store | Public domain | Direct runtime dependency, no isolation needed | `0005`, `0008` |
 | Lichess CC0 puzzle/game/eval exports | Tactical puzzle sourcing, plus strong-player game positions (Elite Database, 2300+ rated — not classical "master game" corpora) | CC0 1.0 | Data, not code; no isolation needed | `0006` |
-| CodeCompass (`codecompass-context`) | Development-time context tool only | GPL-3.0-or-later | Never imported by runtime code — see below | `CLAUDE.md` §8 |
+| CodeCompass (`codecompass-context`) | Development-time context tool only | GPL-3.0-or-later (same as this project) | Never imported by runtime code — see below | `CLAUDE.md` §8 |
 
 ## On this project's relationship to CodeCompass
 
@@ -213,10 +247,11 @@ development; CodeCompass-generated artifacts (`context-graph.db`,
 committed (see `.gitignore`). **Production/runtime code must never import or
 depend on CodeCompass**, and anyone must be able to clone, install, test,
 and run this project's own tutor without CodeCompass installed at all. This
-boundary is the same shape as the GPL-isolation boundaries in `decisions/`
-0002–0004 — a useful GPL-licensed tool, kept out of the distributed
-product — and CodeCompass's own GPL-3.0-or-later license has no bearing on
-this project's MIT license as a result (`decisions/0007`).
+boundary was never a licensing question, even during the project's earlier
+MIT phase — CodeCompass and this project now happen to share the same
+license (both GPL-3.0-or-later, `decisions/0010`) — it is a *deployability*
+boundary: no one should need to install a development-context tool to run
+the finished tutor, regardless of what license either carries.
 
 This project is bootstrapped from
 [`codecompass-template`](https://github.com/ctosullivan/codecompass-template)
@@ -241,43 +276,74 @@ specialist-agent roster — see `CLAUDE.md` §9 and
 
 ## Decisions
 
-See `decisions/` for the full, append-only record. As of this bootstrap:
-`0001` (language/MCP SDK), `0002` (chess-rules validation boundary), `0003`
-(tablebase/engine strategy), `0004` (board rendering), `0005` (Obsidian
-integration), `0006` (tactical puzzle sourcing/validation), `0007` (project
-license), `0008` (concept model representation), `0009` (MVP curriculum
-boundary).
+See `decisions/` for the full, append-only record. `0001` (language/MCP
+SDK), `0002` (chess-rules validation boundary — **superseded by `0010`**),
+`0003` (tablebase/engine strategy — **narrowed by `0010`**), `0004` (board
+rendering — **narrowed by `0010`**), `0005` (Obsidian integration), `0006`
+(tactical puzzle sourcing/validation), `0007` (project license —
+**superseded by `0010`**), `0008` (concept model representation), `0009`
+(MVP curriculum boundary), `0010` (GPL relicensing and dependency
+simplification), `0011` (tactical-puzzle validation reassessed under GPL).
+A decision marked superseded/narrowed keeps its original body unedited, as
+history — the superseding decision's own reasoning is what's currently in
+effect; see `decisions/0010`'s reconciliation table for exactly what
+changed in each case.
 
-## Known open gates
+## Known gates
 
-Carried forward explicitly from `decisions/` rather than treated as settled
-— see each decision's own "Consequences"/gate section for full detail:
+The bootstrap phase produced a number of open gates, several of which
+existed only because of the original MIT licensing goal. Following
+`decisions/0010`'s relicensing, each is reclassified below rather than
+carried forward unexamined — obsolete gates are retired here (their history
+stays visible in git and in the superseded ADRs), not kept indefinitely as
+clutter.
 
-- The FSF GPL FAQ's exact current wording (library-linking and
-  program-output licensing) was not re-fetched verbatim during research
-  (rate-limited both times) — re-verify before relying on this project's
-  GPL-isolation reasoning in anything more formal than internal docs.
-- Syzygy tablebase data/probing-code licenses were not independently
-  confirmed against a signed license file — relevant only if/when local
-  tablebases are added.
-- Whether an adapter-module boundary (rendering) is sufficient isolation
-  versus a stronger subprocess boundary is a risk-tolerance call, not fully
-  closed by research alone.
-- The exact tactical-puzzle "dominant unrelated tactic" rejection check has
-  no off-the-shelf precedent and is original design work for a later phase.
-- **v1 does not yet independently re-derive sourced tactical puzzles'
-  solutions** — it relies on Lichess's own generator/human-review pipeline
-  plus honest provenance tagging, because the in-house validator (`0002`)
-  is endgame-scoped and engine integration is deferred (`0003`). Building
-  this project's own re-derivation pass is real, not-yet-done follow-up
-  work for roadmap item 4, not something already covered — see the
-  narrowed claim in `decisions/0006`.
+**Resolved/superseded by the GPL relicensing (`decisions/0010`)** — no
+longer open questions:
+
+- Whether in-process `python-chess` import threatens the project's
+  preferred license — moot; the project's own license is now GPL.
+- Whether `chess.svg` needs a licensing-motivated isolation boundary — no;
+  see "Layered boundaries" above.
+- Whether a custom legal-move validator is necessary to preserve MIT — no;
+  `decisions/0002`'s runtime decision is superseded, `python-chess` is used
+  directly.
+- The FSF GPL FAQ's exact wording on library-linking and program-output
+  licensing (previously unverified, rate-limited during bootstrap
+  research) — no longer load-bearing for this project's own licensing
+  position, since there is no longer an MIT claim depending on that
+  interpretation. (It could still matter if this project ever needed to
+  reason about *other* projects' GPL obligations, but not its own.)
+- Whether an adapter-module boundary was *sufficient* isolation for an MIT
+  claim (`0004`'s own flagged gate) — moot for the same reason.
+
+**Still relevant** — unaffected by the license change, still open:
+
 - Lichess's actual `Themes` tag vocabulary was not fetched/verified against
   the live dataset in research — only the column's existence was confirmed.
   Confirming real tag spellings against a downloaded copy is a cheap first
   step of roadmap item 4 (`decisions/0009`).
+- **v1 does not yet independently re-derive sourced tactical puzzles' best-
+  move/theme-purity correctness** — `python-chess` now makes move-legality
+  and state-transition re-derivation cheap (`decisions/0011`), but best-move
+  and theme-purity verification still need engine/tablebase analysis this
+  project has not built. v1 continues to rely on Lichess's own generator/
+  human-review pipeline for that part (`decisions/0006`, `0011`).
+- The exact tactical-puzzle "dominant unrelated tactic" rejection check has
+  no off-the-shelf precedent and is original design work for a later phase.
+- Whether/when Stockfish is worth adding is still an open, deliberately
+  deferred question — unaffected by licensing (`decisions/0003`, `0011`).
 - True concurrent-write safety between this project's vault writes and a
   live Obsidian instance has not been empirically validated.
-- Whether the bounded in-house validator's scope is adequate once
-  tactical-puzzle move-generation needs are designed (likely broader than
-  pure pawn endings) is an explicit follow-up gate, not resolved here.
+- Whether cropping should be automatic (inferred from the concept being
+  taught) or explicit in lesson metadata, or both — a design question for
+  roadmap item 6.
+
+**Requires future evidence** — narrower verification tasks, not expected to
+change any current decision but not yet independently confirmed:
+
+- Syzygy tablebase data/probing-code licenses were not independently
+  confirmed against a signed license file — relevant only if/when local
+  tablebases are added, and lower-stakes now that GPL is available as a
+  fallback if the probing-code license turns out to be GPL rather than
+  permissive (unlike under the MIT goal, where this mattered more).
