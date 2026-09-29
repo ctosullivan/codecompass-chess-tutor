@@ -18,12 +18,19 @@ recorded in the same commit as the review that justifies it, rather than
 trusted to happen in the right order across separate steps — is itself now
 logged as a lesson in that retro's "What didn't work" section.
 
-Roadmap item **2A (Python project and chess-state foundation)** has a
-detailed plan (`planning/ROADMAP.md`'s "Phase 2A plan" section) and is
-about to move into actual implementation. No source code exists in the
-repository yet as of this note — this entry will be updated again once
-2A's implementation, tests, CodeCompass dogfooding, and its own independent
-review land.
+Roadmap item **2A (Python project and chess-state foundation)** is now
+**done**. Delivered: `pyproject.toml` (src-layout package, GPL-3.0-or-later,
+pinned `chess`/`mcp` dependencies); `src/chess_tutor/chess_state.py` (the
+chess-state primitive wrapping `python-chess`'s `Board` — FEN loading,
+legal-move enumeration, applying moves, check/checkmate/stalemate
+detection); 23 passing tests; the project's first real CodeCompass
+dogfooding run (`vendor.toml` populated, real digests generated,
+findings recorded in `planning/knowledge/0002` and
+`planning/context-gaps/0001`); and a fresh independent review that
+re-ran the test suite itself, independently re-verified every "verified
+empirically" chess-fact claim in the tests, and found no correctness
+bugs, no scope creep beyond the phase's stated boundary, and consistent
+license headers (see `planning/retros/0003-phase-2a.md`).
 
 **Net effect of the relicensing**: `python-chess` is now a normal runtime
 dependency, used directly for board state, legal moves, notation, Syzygy
@@ -46,3 +53,13 @@ evidence) — it supersedes any older gate list. Most material right now:
   (`decisions/0011`) — unaffected by Phase 2A.
 - Whether/when Stockfish is worth adding remains open and deliberately
   deferred — unaffected by the license change or by Phase 2A.
+- `codecompass query symbol` only indexes class/module-level symbols, not
+  individual methods — method-level questions need the containing class
+  queried first, then a fallback to the raw source under `vendor/<name>/src/`
+  (`planning/context-gaps/0001`). Not yet promoted to a documented habit;
+  worth doing if it recurs in Phase 2B.
+
+Next: roadmap item 2B (endgame concept/state model) — not started. Its own
+detailed plan is not yet written (per `planning/ROADMAP.md`, later phases
+get their own plan only when started, to avoid speculative up-front
+planning).
