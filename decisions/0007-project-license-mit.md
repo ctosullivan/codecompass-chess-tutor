@@ -2,7 +2,15 @@
 
 ## Status
 
-Accepted (2026-09-30).
+Accepted (2026-09-30). **Superseded in full by `decisions/0010`
+(2026-09-30)**: the project owner has explicitly decided to relicense
+GPL-3.0-or-later, on the grounds that the available chess ecosystem
+dependencies make GPL a better fit and that avoiding them (via the
+isolation architecture this record's reasoning depended on) introduces
+unnecessary custom infrastructure. This note is added per this file's own
+append-only rule; the rest of this record is left exactly as originally
+written, as history — it remains an accurate account of why MIT was chosen
+*at the time*, on the evidence then available.
 
 ## Context
 

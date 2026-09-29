@@ -2,7 +2,18 @@
 
 ## Status
 
-Accepted (2026-09-30).
+Accepted (2026-09-30). **Narrowed by `decisions/0010` (2026-09-30)**: the
+isolation-boundary reasoning below (keeping `python-chess`/`chess.svg`
+types out of the rest of the codebase specifically to protect an MIT
+claim) no longer applies now that the project is GPL-3.0-or-later licensed
+— `chess.svg` is now a normal base rendering primitive, usable directly.
+The pedagogical decision itself — separating a `PedagogicalViewSpec` from
+the underlying rendering primitive, and building the cropping/annotation
+layer as project-owned code — remains fully valid, now justified purely by
+separation of concerns rather than by licensing. The cburnett BSD-option
+attribution decision below also remains valid and unaffected. This note is
+added per this file's own append-only rule; the rest of this record is left
+exactly as originally written, as history.
 
 ## Context
 

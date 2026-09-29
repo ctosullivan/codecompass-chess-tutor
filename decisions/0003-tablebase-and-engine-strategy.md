@@ -2,7 +2,18 @@
 
 ## Status
 
-Accepted (2026-09-30).
+Accepted (2026-09-30). **Narrowed by `decisions/0010` (2026-09-30)**: the
+overall tablebase-preferred/engine-deferred strategy below remains valid
+and in effect. Two sub-choices that were specifically motivated by keeping
+the project MIT-compatible no longer apply now that the project is
+GPL-3.0-or-later licensed: (1) the preference for standalone Syzygy probing
+code over python-chess's own bundled `chess.syzygy` module, if/when local
+tablebases are added — python-chess's own module is now the simpler
+choice; (2) Stockfish's "never imported in-process" constraint's
+*licensing* rationale — the subprocess/UCI pattern itself is retained, now
+justified by process isolation rather than license avoidance. This note is
+added per this file's own append-only rule; the rest of this record is left
+exactly as originally written, as history.
 
 ## Context
 

@@ -2,7 +2,13 @@
 
 ## Status
 
-Accepted (2026-09-30).
+Accepted (2026-09-30). **Superseded by `decisions/0010` (2026-09-30)**: the
+runtime decision below (build a bespoke in-house legal-move validator to
+avoid importing GPL-licensed `python-chess`) no longer applies now that the
+project is GPL-3.0-or-later licensed. `python-chess` is adopted directly as
+a normal runtime dependency instead. This note is added per this file's own
+append-only rule; the rest of this record is left exactly as originally
+written, as history.
 
 ## Context
 
