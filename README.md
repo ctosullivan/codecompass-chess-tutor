@@ -4,6 +4,13 @@ An experimental AI-assisted chess-learning system. This repository is
 currently a **research-and-architecture bootstrap** — there is no running
 tutor yet. See `planning/CONTEXT.md` for exactly where things stand.
 
+**Licensing note**: this project is licensed **GPL-3.0-or-later**. It began
+as an MIT-conditional bootstrap; the project owner subsequently decided GPL
+is the better fit, since the available chess ecosystem (chiefly
+`python-chess`) fits GPL naturally and avoiding it would have meant building
+unnecessary custom infrastructure. See `decisions/0010` and the License
+section below.
+
 ## What this is trying to be
 
 CodeCompass Chess Tutor treats chess learning as several interacting
@@ -41,8 +48,10 @@ project was bootstrapped from, preserved verbatim.
   learner's Obsidian vault as an ordinary folder of Markdown files
   (`decisions/0001`, `0005`).
 - Pedagogical board rendering — including cropped/cutaway views, not just
-  full 8×8 boards — as a first-class part of the teaching model
-  (`decisions/0004`, `docs/architecture.md`).
+  full 8×8 boards — as a first-class part of the teaching model, built as
+  project-owned composition logic on top of `python-chess`'s `chess.svg` as
+  an ordinary rendering primitive (`decisions/0004`, `0010`,
+  `docs/architecture.md`).
 
 ## What's explicitly out of the first MVP
 
@@ -54,7 +63,9 @@ project was bootstrapped from, preserved verbatim.
 - A full evaluation engine (e.g. Stockfish) — not needed for tablebase-scope
   endgames; deferred until a concrete need (puzzle-quality validation)
   justifies it, and then only as an optional, subprocess-isolated component
-  (`decisions/0003`).
+  (`decisions/0003`, `0010` — the subprocess pattern is kept for process-
+  isolation reasons, not licensing; GPL permitting an in-process engine is
+  not itself a reason to add one).
 - Any dependency on Obsidian actually running, or on Obsidian plugins — the
   tutor works with a vault as a plain folder on disk (`decisions/0005`).
 - CodeCompass as anything other than a development-time tool — it is never
@@ -90,11 +101,29 @@ project's relationship to CodeCompass" section and `CLAUDE.md` §8.
 
 ## License
 
-MIT — see `LICENSE`. This was a researched conclusion, not an assumption:
-see `decisions/0007-project-license-mit.md` for the dependency-licensing
-review (chess libraries/engines/tablebases, MCP SDKs, board-rendering
-libraries and bundled artwork, tactical-puzzle datasets) that supports it,
-and that record's own open verification gates.
+**GPL-3.0-or-later** — see `LICENSE`, which contains the FSF's own
+canonical GPLv3 license text, unmodified (per the FSF's own guidance that
+copies of the license itself must stay verbatim).
+
+This project began its bootstrap with MIT as the preferred, conditional
+license (`decisions/0007`), supported at the time by an architecture that
+deliberately isolated every GPL-licensed dependency it touched (a bespoke
+in-house legal-move validator instead of importing `python-chess`; an
+isolation boundary around `chess.svg`). **The project owner subsequently
+decided GPL-3.0-or-later is the better fit**: the chess ecosystem this
+project depends on (`python-chess` chief among it) is itself GPL-licensed,
+and the isolation architecture built to avoid it was unnecessary custom
+infrastructure once GPL was an acceptable license for the project itself.
+See `decisions/0010-gpl-relicensing-and-dependency-simplification.md` for
+the full reasoning, and `decisions/0007` (marked superseded, left otherwise
+unedited as history) for why MIT was the original conclusion.
+
+Some components this project depends on or interoperates with carry their
+own separate licenses and attribution terms, independent of this project's
+own license choice — see `NOTICE-THIRD-PARTY.md` (notably: the cburnett
+chess-piece artwork's BSD-3-clause attribution requirement, which GPL
+adoption does not remove) and `docs/architecture.md`'s "Key dependencies"
+table.
 
 ## Status
 
