@@ -2,7 +2,13 @@
 
 ## Status
 
-Accepted (2026-09-30).
+Accepted (2026-09-30). Not superseded. **See also `decisions/0011`**
+(2026-09-30), which reassesses this record's independent-re-derivation gate
+under the GPL relicensing in `decisions/0010` — `python-chess` now makes
+move-legality/state-transition re-derivation cheap, but this record's
+underlying conclusions (Lichess CC0 sourcing, deferred generation,
+reliance on Lichess's pipeline for best-move/theme-purity correctness)
+stand unchanged.
 
 ## Context
 
