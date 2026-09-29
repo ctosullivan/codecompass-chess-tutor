@@ -6,40 +6,57 @@ belongs in git log and `planning/retros/`, not here.
 
 ## Current state
 
-Bootstrap phase (roadmap item 1) is **done**. Delivered and committed: the
-codecompass-template-adapted process structure; five research documents
-under `docs/research/` (chess engine/tablebase licensing, tactical puzzle
-dataset licensing and validation, MCP SDK/protocol and language choice,
-board rendering options, Obsidian integration/learner storage); nine ADRs
-(`decisions/0001`–`0009`) covering language/SDK choice, the chess-rules
-validation boundary, tablebase/engine strategy, board rendering, Obsidian
-vault integration, tactical-puzzle sourcing/validation, the concept-model
-representation, the MVP curriculum boundary, and the project license;
-`docs/architecture.md` synthesizing all of it; `README.md`; `LICENSE` (MIT);
-an independent review pass against the bootstrap prompt's own 18-question
-"definition of success" list, which found and led to fixing six real
-inconsistencies (see `planning/retros/0001-project-bootstrap.md` and the
-commit that followed it); and this retro plus a
-`planning/knowledge/` entry capturing the two generalizable patterns that
-review surfaced.
+Bootstrap phase (roadmap item 1) and the GPL relicensing/architecture-
+simplification phase (roadmap item 1b) are both **done**.
 
-Next: roadmap item 2, the endgame-domain model — design the SQLite
-concept-graph schema (`decisions/0008`) and build the bounded pawn-ending
-curriculum (`decisions/0009`) against it. This is the first phase that
-produces real code.
+Bootstrap delivered: the codecompass-template-adapted process structure;
+five research documents under `docs/research/`; the original nine ADRs
+(`decisions/0001`–`0009`); `docs/architecture.md`, `README.md`, and an
+initial MIT `LICENSE`; an independent review pass that found and fixed six
+inconsistencies (`planning/retros/0001-project-bootstrap.md`).
+
+The project owner then explicitly decided the project should be
+GPL-3.0-or-later instead of MIT (`planning/prompts/0002-gpl-relicensing-and-simplification.md`).
+This phase delivered: `decisions/0010` (the superseding relicensing
+decision, reconciling `0002`/`0003`/`0004`/`0007`) and `decisions/0011`
+(reassessing tactical-puzzle validation under the simplified dependency
+model); a canonical, unmodified GPL-3.0 `LICENSE`; `NOTICE-THIRD-PARTY.md`
+for attribution obligations independent of this project's own license;
+`docs/architecture.md` and `README.md` reconciled throughout, including a
+correction to a hedge-rounding overclaim about board-rendering library
+support; `planning/ROADMAP.md` re-planned to reflect reduced infrastructure
+work (no bespoke legal-move validator, no rendering isolation boundary)
+without broadening the MVP boundary.
+
+**Net effect**: `python-chess` is now a normal runtime dependency, used
+directly for board state, legal moves, notation, Syzygy support, and SVG
+rendering. The chess-truth/pedagogy epistemic boundary (`docs/architecture.md`
+"Chess truth vs. AI explanation") is unchanged — GPL adoption simplified
+software boundaries, not the distinction between mechanically-established
+facts and AI interpretation.
+
+Next: the implementation phase identified in `planning/ROADMAP.md`'s "Next
+implementation phase" section — establish the real Python package with
+`python-chess` and the `mcp` SDK as its first dependencies, integrate
+`python-chess` as the chess-state representation, build the smallest
+concept/state model for the bounded pawn-ending curriculum, and run
+CodeCompass against the resulting real project state as this project's
+first genuine dogfooding exercise. **Not yet started** — this replanning
+task explicitly stopped short of implementing it.
 
 ## Known gaps / rough edges
 
-- No code exists yet — this was intentionally a research-and-architecture-only
-  bootstrap, per `planning/prompts/0001-project-bootstrap.md`.
-- Several research documents and ADRs carry explicit, unresolved human
-  decision gates rather than settled facts — see each document's own "Open
-  uncertainty" section and `docs/architecture.md`'s "Known open gates" for
-  the full list. The most material for near-term work: (a) v1's tactical
-  puzzles rely on Lichess's own validation pipeline, not this project's own
-  independent re-derivation, which is deferred to roadmap item 4
-  (`decisions/0006`); (b) Lichess's actual `Themes` tag vocabulary hasn't
-  been verified against the live dataset yet (`decisions/0009`) — a cheap
-  first step of that same phase; (c) whether the bounded in-house validator
-  (`decisions/0002`) is adequate once tactical-puzzle move-generation needs
-  are designed is an open follow-up gate.
+See `docs/architecture.md`'s "Known gates" section for the full, current
+four-way classification (resolved-by-GPL / still relevant / requires future
+evidence) — it supersedes any older gate list. The gates most material for
+the next implementation phase:
+
+- Lichess's actual `Themes` tag vocabulary hasn't been verified against the
+  live dataset yet (`decisions/0009`) — cheap, worth doing early.
+- v1's tactical puzzles still rely on Lichess's own validation pipeline for
+  best-move/theme-purity correctness, not this project's own re-derivation
+  — `python-chess` now makes move-legality/state-transition re-derivation
+  cheap and could plausibly move into the next phase, but that's an
+  opportunity, not a decision made yet (`decisions/0011`).
+- Whether/when Stockfish is worth adding remains open and deliberately
+  deferred — unaffected by the license change.

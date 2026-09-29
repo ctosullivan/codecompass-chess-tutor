@@ -73,9 +73,11 @@ This project may use CodeCompass (`codecompass-context`) during development
 for dependency/source context — see `vendor.toml` and
 `docs/architecture.md`. Runtime/production code must never import or depend
 on CodeCompass. Anyone must be able to clone, install, test, and run this
-project's own tutor without CodeCompass installed. CodeCompass's own license
-(GPL-3.0-or-later) has no bearing on this project's license as a result —
-see the Licensing section of `docs/architecture.md` and the relevant ADR.
+project's own tutor without CodeCompass installed. This is a deployability
+rule, not a licensing one — it would hold regardless of what license either
+project carries (they currently both happen to be GPL-3.0-or-later; see
+`docs/architecture.md`'s "On this project's relationship to CodeCompass" and
+`decisions/0010`).
 
 ## 9. Small process, added to only when justified
 
