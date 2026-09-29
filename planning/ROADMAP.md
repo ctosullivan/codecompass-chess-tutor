@@ -10,8 +10,8 @@ not as a separate housekeeping pass later.
 
 | # | Item | Status | Notes |
 |---|---|---|---|
-| 1 | Bootstrap: process, evidence-gathering, initial architecture | in progress | This phase. See `planning/prompts/0001-project-bootstrap.md` and `docs/research/`. |
-| 2 | Endgame-domain model (state, concepts, principles) | planned | Scope depends on the bounded starting curriculum chosen in `docs/architecture.md` / the relevant ADR. |
+| 1 | Bootstrap: process, evidence-gathering, initial architecture | done | Research, decisions 0001-0009, architecture/README/LICENSE, independent review, fixes, and retro all complete. See `planning/prompts/0001-project-bootstrap.md`, `docs/research/`, `decisions/`, `planning/retros/0001-project-bootstrap.md`. |
+| 2 | Endgame-domain model (state, concepts, principles) | planned | Scope is the bounded pawn-ending curriculum in `decisions/0009`; schema shape in `decisions/0008`. |
 | 3 | Mechanically validated endgame core (legal-move validation, tablebase-backed correctness) | planned | See `docs/research/chess-engine-tablebase-licensing.md` for the licensing boundary this depends on. |
 | 4 | Tactical motif / daily-puzzle model | planned | See `docs/research/tactical-puzzle-datasets.md` for sourcing/validation approach. |
 | 5 | Learner / pedagogical model | planned | Concepts encountered, recurring errors, prerequisites, transfer evidence. |
